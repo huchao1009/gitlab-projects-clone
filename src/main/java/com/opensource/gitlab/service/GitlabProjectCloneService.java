@@ -11,11 +11,13 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -194,28 +196,13 @@ public class GitlabProjectCloneService {
         try {
             Process exec = Runtime.getRuntime().exec(command, null, execDir);
             exec.waitFor();
-            String successResult = inputStreamToString(exec.getInputStream());
-            String errorResult = inputStreamToString(exec.getErrorStream());
+            String successResult = StreamUtils.copyToString(exec.getInputStream(), Charset.forName("UTF-8"));
+            String errorResult = StreamUtils.copyToString(exec.getErrorStream(),Charset.forName("UTF-8"));
             System.out.println("successResult: " + successResult);
             System.out.println("errorResult: " + errorResult);
             System.out.println("================================");
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private String inputStreamToString(final InputStream input) {
-        StringBuilder result = new StringBuilder();
-        Reader reader = new InputStreamReader(input);
-        BufferedReader bf = new BufferedReader(reader);
-        String line;
-        try {
-            while ((line = bf.readLine()) != null) {
-                result.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result.toString();
     }
 }
